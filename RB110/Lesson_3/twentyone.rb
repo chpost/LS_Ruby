@@ -16,12 +16,12 @@ end
 
 def card_left(card)
   val, suit = card.split
-  "|#{(val + ' ' + to_icon(suit)).ljust(7, ' ')}|"
+  "|#{"#{val} #{to_icon(suit)}".ljust(7, ' ')}|"
 end
 
 def card_right(card)
   val, suit = card.split
-  "|#{(to_icon(suit) + ' ' + val).rjust(7, ' ')}|"
+  "|#{"#{to_icon(suit)} #{val}".rjust(7, ' ')}|"
 end
 
 def print_dealer_hand(hand)
@@ -59,7 +59,7 @@ def to_icon(suit)
   icons[suit].chr('UTF-8')
 end
 
-def display(p_hand, d_hand, hide_dealer_card = true)
+def display(p_hand, d_hand, hide_dealer_card: true)
   system 'clear'
   puts "DEALER: total #{hide_dealer_card ? value(d_hand.first) : score(d_hand)}"
   if hide_dealer_card
@@ -77,7 +77,7 @@ end
 def score(hand)
   aces, other = hand.partition { |card| card.start_with?('A') }
   total = (other.map do |card|
-    val, _ = card.split
+    val = card.split[0]
     if ('2'..'9').include?(val)
       val.to_i
     else
@@ -114,11 +114,9 @@ def busted?(hand)
 end
 
 def winner(player, dealer)
-  if busted?(player)
-    'dealer'
-  elsif busted?(dealer)
-    'player'
-  elsif score(player) > score(dealer)
+  return 'dealer' if busted?(player)
+
+  if busted?(dealer) || score(player) > score(dealer)
     'player'
   else
     'dealer'
@@ -160,7 +158,7 @@ loop do
     break if busted?(player) || answer == 's'
   end
 
-  display(player, dealer, false)
+  display(player, dealer, hide_dealer_card: false)
   prompt "The player busted!" if busted?(player)
 
   # dealer turn
@@ -169,7 +167,7 @@ loop do
     prompt "The dealer is going to hit!"
     sleep 1.5
     dealer << hit(deck)
-    display(player, dealer, false)
+    display(player, dealer, hide_dealer_card: false)
     if busted?(dealer)
       prompt "The dealer busted!"
       break
@@ -182,3 +180,5 @@ loop do
   play_again = (gets.chomp.downcase[0] == 'y')
   break if !play_again
 end
+
+prompt "Thanks for playing! Good bye!"
