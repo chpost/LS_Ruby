@@ -61,7 +61,7 @@ end
 
 def display(p_hand, d_hand, hide_dealer_card = true)
   system 'clear'
-  puts "DEALER"
+  puts "DEALER: total #{hide_dealer_card ? value(d_hand.first) : score(d_hand)}"
   if hide_dealer_card
     print_dealer_hand(d_hand)
   else
@@ -70,7 +70,7 @@ def display(p_hand, d_hand, hide_dealer_card = true)
 
   puts ''
 
-  puts "PLAYER"
+  puts "PLAYER: total #{score(p_hand)}"
   print_hand(p_hand)
 end
 
@@ -87,7 +87,7 @@ def sort(hand)
   end
 end
 
-def value(card, total)
+def value(card, total = 0)
   val = card.split[0]
   case val
   when '2'..'9' then val.to_i
@@ -119,33 +119,53 @@ def new_deck
   deck.flatten
 end
 
-deck = new_deck.shuffle
-player = [hit(deck), hit(deck)]
-dealer = [hit(deck), hit(deck)]
+prompt "Welcome to Twenty-One!"
 
-# player turn
 loop do
-  display(player, dealer)
-  prompt "hit or stay?"
-  answer = gets.chomp
-  break if busted?(player) || answer.downcase.start_with?('s')
-  player << hit(deck)
-end
+  deck = new_deck.shuffle
+  player = [hit(deck), hit(deck)]
+  dealer = [hit(deck), hit(deck)]
 
-display(player, dealer, false)
-prompt "The player busted!" if busted?(player)
+  # player turn
+  loop do
+    display(player, dealer)
 
-# dealer turn
-loop do
-  break if busted?(player) || score(dealer) >= 17
-  prompt "The dealer is going to hit"
-  sleep 2
-  dealer << hit(deck)
-  display(player, dealer, false)
-  if busted?(dealer)
-    prompt "The dealer busted!"
-    break
+    answer = ''
+    loop do
+      prompt "Are you going to (h)it or (s)tay?"
+      answer = gets.chomp[0].downcase
+      break if ['s', 'h'].include?(answer)
+      prompt "Invalid input, enter 'h' or 's'."
+    end
+
+    if answer == 'h'
+      player << hit(deck)
+      prompt "The player is going to hit!"
+      sleep 1.5
+    end
+
+    break if busted?(player) || answer == 's'
   end
-end
 
-prompt "The #{winner(player, dealer)} won!"
+  display(player, dealer, false)
+  prompt "The player busted!" if busted?(player)
+
+  # dealer turn
+  loop do
+    break if busted?(player) || score(dealer) >= 17
+    prompt "The dealer is going to hit!"
+    sleep 1.5
+    dealer << hit(deck)
+    display(player, dealer, false)
+    if busted?(dealer)
+      prompt "The dealer busted!"
+      break
+    end
+  end
+
+  prompt "The #{winner(player, dealer)} won!"
+
+  prompt "Would you like to play again? (y/n)"
+  play_again = (gets.chomp.downcase[0] == 'y')
+  break if !play_again
+end
