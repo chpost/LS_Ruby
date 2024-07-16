@@ -61,7 +61,7 @@ end
 
 def display(p_hand, d_hand, hide_dealer_card: true)
   system 'clear'
-  puts "DEALER: total #{hide_dealer_card ? value(d_hand.first) : score(d_hand)}"
+  puts "DEALER: total #{score(hide_dealer_card ? [d_hand.first] : d_hand)}"
   if hide_dealer_card
     print_dealer_hand(d_hand)
   else
@@ -91,24 +91,6 @@ def score(hand)
   total
 end
 
-def sort(hand)
-  hand.sort do |card_a, card_b|
-    a = card_a.split[0]
-    b = card_b.split[0]
-
-    CARD_VALUES.index(a) <=> CARD_VALUES.index(b)
-  end
-end
-
-def value(card, total = 0)
-  val = card.split[0]
-  case val
-  when '2'..'9' then val.to_i
-  when '10', 'J', 'Q', 'K' then 10
-  else total > 10 ? 1 : 11
-  end
-end
-
 def busted?(hand)
   score(hand) > 21
 end
@@ -123,19 +105,26 @@ def winner(player, dealer)
   end
 end
 
-def new_deck
+def deal
   deck = SUITS.map do |suit|
     CARD_VALUES.map { |val| "#{val} #{suit}" }
   end
-  deck.flatten
+
+  deck.flatten!.shuffle!
+  player = []
+  dealer = []
+  2.times do
+    player << deck.shift
+    dealer << deck.shift
+  end
+
+  [deck, player, dealer]
 end
 
 prompt "Welcome to Twenty-One!"
 
 loop do
-  deck = new_deck.shuffle
-  player = [hit(deck), hit(deck)]
-  dealer = [hit(deck), hit(deck)]
+  deck, player, dealer = deal
 
   # player turn
   loop do
