@@ -75,7 +75,20 @@ def display(p_hand, d_hand, hide_dealer_card = true)
 end
 
 def score(hand)
-  sort(hand).inject(0) { |sum, card| sum + value(card, sum) }
+  aces, other = hand.partition { |card| card.start_with?('A') }
+  total = (other.map do |card|
+    val, _ = card.split
+    if ('2'..'9').include?(val)
+      val.to_i
+    else
+      10
+    end
+  end).sum
+
+  total += aces.size * 11
+  aces.size.times { total -= 10 if total > 21 }
+
+  total
 end
 
 def sort(hand)
