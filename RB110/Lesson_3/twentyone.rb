@@ -1,6 +1,8 @@
 require 'pry-byebug'
 
 SUITS = %w(C D H S)
+MAX_VALUE = 21
+DEALER_SAFE_VALUE = 17
 CARD_VALUES = %w(2 3 4 5 6 7 8 9 10 J Q K A)
 CARD_BORDER = "+-------+"
 CARD_FRONT = "|       |"
@@ -59,9 +61,13 @@ def to_icon(suit)
   icons[suit].chr('UTF-8')
 end
 
-def display(p_hand, d_hand, hide_dealer_card: true)
+def display(p_hand, d_hand, p_total, d_total, p_score, d_score, hide_dealer_card: true)
   system 'clear'
-  puts "DEALER: total #{score(hide_dealer_card ? [d_hand.first] : d_hand)}"
+  puts '=' * 28
+  puts "TWENTY ONE"
+  puts "wins -> player: #{p_score}, dealer: #{d_score}"
+  puts '=' * 28
+  puts "Dealer: total #{d_total}"
   if hide_dealer_card
     print_dealer_hand(d_hand)
   else
@@ -70,8 +76,9 @@ def display(p_hand, d_hand, hide_dealer_card: true)
 
   puts ''
 
-  puts "PLAYER: total #{score(p_hand)}"
+  puts "Player: total #{p_total}"
   print_hand(p_hand)
+  puts '=' * 28
 end
 
 def score(hand)
@@ -86,22 +93,24 @@ def score(hand)
   end).sum
 
   total += aces.size * 11
-  aces.size.times { total -= 10 if total > 21 }
+  aces.size.times { total -= 10 if total > MAX_VALUE }
 
   total
 end
 
-def busted?(hand)
-  score(hand) > 21
+def busted?(total)
+  total > MAX_VALUE
 end
 
-def winner(player, dealer)
-  return 'dealer' if busted?(player)
+def detect_winner(player, dealer)
+  return :dealer if busted?(player)
 
-  if busted?(dealer) || score(player) > score(dealer)
-    'player'
+  if busted?(dealer) || player > dealer
+    :player
+  elsif player == dealer
+    :tie
   else
-    'dealer'
+    :dealer
   end
 end
 
@@ -121,53 +130,87 @@ def deal
   [deck, player, dealer]
 end
 
+def play_again?
+  prompt "Would you like to play again? (y/n)"
+  answer = gets.chomp[0].downcase
+  answer == 'y'
+end
+
 prompt "Welcome to Twenty-One!"
 
 loop do
-  deck, player, dealer = deal
+  player_score = 0
+  dealer_score = 0
+  winner = nil
 
-  # player turn
   loop do
-    display(player, dealer)
+    deck, player, dealer = deal
+    player_total = score(player)
+    dealer_total = score([dealer.first])
 
-    answer = ''
+    # player turn
     loop do
-      prompt "Are you going to (h)it or (s)tay?"
-      answer = gets.chomp[0].downcase
-      break if ['s', 'h'].include?(answer)
-      prompt "Invalid input, enter 'h' or 's'."
-    end
+      display(player, dealer, player_total, dealer_total, player_score, dealer_score)
 
-    if answer == 'h'
-      player << hit(deck)
-      prompt "The player is going to hit!"
+      answer = ''
+      loop do
+        prompt "Are you going to (h)it or (s)tay?"
+        answer = gets.chomp[0].downcase
+        break if ['s', 'h'].include?(answer)
+        prompt "Invalid input, enter 'h' or 's'."
+      end
+
+      if answer == 'h'
+        player << hit(deck)
+        player_total = score(player)
+        prompt "The player is going to hit!"
+      else
+        prompt "The player is going to stay!"
+      end
+
       sleep 1.5
+      break if busted?(player_total) || answer == 's'
     end
 
-    break if busted?(player) || answer == 's'
-  end
+    dealer_total = score(dealer)
+    display(player, dealer, player_total, dealer_total, player_score, dealer_score, hide_dealer_card: false)
+    prompt "The player busted!" if busted?(player_total)
 
-  display(player, dealer, hide_dealer_card: false)
-  prompt "The player busted!" if busted?(player)
+    # dealer turn
+    loop do
+      break if busted?(player_total) || busted?(dealer_total)
+      if dealer_total >= DEALER_SAFE_VALUE
+        prompt "The dealer is going to stay!"
+        sleep 1.5
+        break
+      else
+        prompt "The dealer is going to hit!"
+        dealer << hit(deck)
+        dealer_total = score(dealer)
+      end
 
-  # dealer turn
-  loop do
-    break if busted?(player) || score(dealer) >= 17
-    prompt "The dealer is going to hit!"
-    sleep 1.5
-    dealer << hit(deck)
-    display(player, dealer, hide_dealer_card: false)
-    if busted?(dealer)
-      prompt "The dealer busted!"
-      break
+      sleep 1.5
+      display(player, dealer, player_total, dealer_total, player_score, dealer_score, hide_dealer_card: false)
     end
+
+    prompt "The dealer busted!" if busted?(dealer_total)
+
+    winner = detect_winner(player_total, dealer_total)
+    prompt (winner == :tie ? "It's a tie!" : "The #{winner} won!")
+    gets
+
+    case winner
+    when :player
+      player_score += 1
+    when :dealer
+      dealer_score += 1
+    end
+
+    break if player_score == 5 || dealer_score == 5
   end
 
-  prompt "The #{winner(player, dealer)} won!"
-
-  prompt "Would you like to play again? (y/n)"
-  play_again = (gets.chomp.downcase[0] == 'y')
-  break if !play_again
+  prompt "The #{winner} has won 5 rounds and is the grand winner!"
+  break if !play_again?
 end
 
 prompt "Thanks for playing! Good bye!"
