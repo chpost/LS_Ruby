@@ -1,5 +1,6 @@
 class Card
   attr_reader :suit, :face
+
   def initialize(suit, face)
     @suit = suit
     @face = face
@@ -23,6 +24,7 @@ class Card
     face == 'A'
   end
 
+  # rubocop:disable Metrics/MethodLength
   def display(hide_face: false)
     if hide_face
       top = '??'
@@ -41,10 +43,7 @@ class Card
       "+-------+"
     ]
   end
-
-  def to_s
-    "#{@value}#{suit}"
-  end
+  # rubocop:enable Metrics/MethodLength
 end
 
 class Deck
@@ -62,7 +61,6 @@ class Deck
     cards.shuffle!
   end
 
-
   def >>(participant)
     participant << @cards.pop
   end
@@ -70,8 +68,10 @@ end
 
 module Hand
   def show_hand
+    hand = cards.map(&:display).transpose
+                .map { |line| line.join ' ' }
     puts "---- #{name}'s Hand ----"
-    puts cards.map(&:display).transpose.map { |line| line.join ' ' }
+    puts hand
     puts "=> Total: #{total}"
     puts ""
   end
@@ -106,6 +106,10 @@ class Participant
     @cards = []
     set_name
   end
+
+  def to_s
+    name
+  end
 end
 
 class Player < Participant
@@ -118,6 +122,18 @@ class Player < Participant
       puts "Sorry, must enter a value."
     end
     self.name = name
+  end
+
+  def hit_or_stay
+    puts "Would you like to (h)it or (s)tay?"
+    answer = nil
+    loop do
+      answer = gets.chomp.downcase
+      break if ['h', 's'].include? answer
+      puts "Sorry, must enter 'h' or 's'."
+    end
+
+    answer == 'h' ? :hit : :stay
   end
 
   def show_flop
@@ -133,9 +149,18 @@ class Dealer < Participant
   end
 
   def show_flop
+    hand = [
+      cards.first.display,
+      cards.last.display(hide_face: true)
+    ].transpose.map { |line| line.join ' ' }
     puts "---- #{name}'s Hand ----"
-    puts [cards.first.display, cards.last.display(hide_face: true)]
-            .transpose.map { |line| line.join ' ' }
+    puts hand
+    puts "=> Total: #{cards.first.value}"
+    puts ""
+  end
+
+  def hit_or_stay
+    total >= 17 ? :stay : :hit
   end
 end
 
@@ -171,55 +196,37 @@ class TwentyOne
   def player_turn
     loop do
       show_flop
-      puts "#{player.name}'s turn..."
+      puts "#{player}'s turn..."
 
-      puts "Would you like to (h)it or (s)tay?"
-      answer = nil
-      loop do
-        answer = gets.chomp.downcase
-        break if ['h', 's'].include? answer
-        puts "Sorry, must enter 'h' or 's'."
-      end
-
-      if answer == 's'
-        puts "#{player.name} stays!"
-        sleep 2
-        break
-      elsif player.busted?
-        break
-      else
-        deck >> player
-        puts "#{player.name} hits!"
-        break if player.busted?
-      end
+      break if player.busted?
+      choice = player.hit_or_stay
+      puts "#{player} #{choice}s!"
+      sleep 2
+      break if choice == :stay
+      deck >> player
     end
   end
 
   def dealer_turn
     loop do
       show_cards
-      puts "#{dealer.name}'s turn..."
+      puts "#{dealer}'s turn..."
 
-      if dealer.total >= 17 &&!dealer.busted?
-        puts "#{dealer.name} stays!"
-        sleep 2
-        break
-      elsif dealer.busted?
-        break
-      else
-        puts "#{dealer.name} hits!"
-        sleep 2
-        deck >> dealer
-      end
+      break if dealer.busted?
+      choice = dealer.hit_or_stay
+      puts "#{dealer} #{choice}s!"
+      sleep 2
+      break if choice == :stay
+      deck >> dealer
     end
   end
 
   def show_busted
     show_cards
     if player.busted?
-      puts "It looks like #{player.name} busted! #{dealer.name} wins!"
+      puts "It looks like #{player} busted! #{dealer} wins!"
     elsif dealer.busted?
-      puts "It looks like #{dealer.name} busted! #{player.name} wins!"
+      puts "It looks like #{dealer} busted! #{player} wins!"
     end
     gets
   end
@@ -231,10 +238,11 @@ class TwentyOne
   end
 
   def show_result
+    show_cards
     if player.total > dealer.total
-      puts "It looks like #{player.name} wins!"
+      puts "It looks like #{player} wins!"
     elsif player.total < dealer.total
-      puts "It looks like #{dealer.name} wins!"
+      puts "It looks like #{dealer} wins!"
     else
       puts "It's a tie!"
     end
@@ -253,6 +261,8 @@ class TwentyOne
     answer == 'y'
   end
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def start
     loop do
       deal_cards
@@ -260,32 +270,27 @@ class TwentyOne
       player_turn
       if player.busted?
         show_busted
-        if play_again?
-          reset
-          next
-        else
-          break
-        end
+        break unless play_again?
+        reset
+        next
       end
 
       dealer_turn
       if dealer.busted?
         show_busted
-        if play_again?
-          reset
-          next
-        else
-          break
-        end
+        break unless play_again?
+        reset
+        next
       end
 
-      show_cards
       show_result
       play_again? ? reset : break
     end
 
     puts "Thank you for playing Twenty-One. Goodbye!"
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
 end
 
 TwentyOne.new.start
