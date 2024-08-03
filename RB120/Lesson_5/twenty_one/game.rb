@@ -2,7 +2,7 @@
 %w(deck player display).each { |f| require_relative f }
 
 class Game
-  include Display
+  include TwentyOneDisplay
 
   def initialize
     @dealer = Dealer.new

@@ -1,4 +1,4 @@
-module Display
+module TwentyOneDisplay
   def clear_and_display_message(key, data = nil)
     clear_screen
     display_message key, data
