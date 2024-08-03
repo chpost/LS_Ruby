@@ -30,12 +30,6 @@ class Game
   attr_reader :player, :dealer, :mode, :target
   attr_accessor :deck, :remaining_rounds
 
-  def display_message(key, data = nil)
-    message = MESSAGES[key.to_s]
-    message = format(message, data) if data
-    puts message
-  end
-
   def detect_grand_winner
     return if player.score == dealer.score
     player.score > dealer.score ? player : dealer
@@ -45,12 +39,13 @@ class Game
     winner = detect_grand_winner
     if !winner
       clear_and_display_message(
-        :grand_tie, { player: player, dealer: dealer, score: player.score }
+        :grand_tie, player, dealer, player.score
       )
       return
     end
-    clear_and_display_message(winner == player ? :grand_win : :grand_lose,
-                              { winner: winner, score: winner.score })
+    clear_and_display_message(
+      winner == player ? :grand_win : :grand_lose, winner, winner.score
+    )
   end
 
   def set_name
@@ -119,7 +114,8 @@ class Game
   def condition_met?
     case mode
     when :single then true
-    when :best_of then remaining_rounds < (player.score - dealer.score).abs
+    when :best_of then remaining_rounds == 0 ||
+      remaining_rounds < (player.score - dealer.score).abs
     when :first_to then player.score == target || dealer.score == target
     end
   end
@@ -140,6 +136,7 @@ class Game
 
   def reset
     new_round
+    @remaining_rounds = target if mode == :best_of
     return if mode == :single
     player.score = 0
     dealer.score = 0
@@ -171,7 +168,7 @@ class Game
       choice = hit_or_stay
       deck >> player if choice == :hit
       display_cards
-      display_message choice, { participant: player }
+      display_message choice, player
       delay
       break if player.busted? || choice == :stay
     end
@@ -184,7 +181,7 @@ class Game
       choice = dealer.total <= 17 ? :hit : :stay
       deck >> dealer if choice == :hit
       display_cards dealer_turn: true
-      display_message choice, { participant: dealer }
+      display_message choice, dealer
       delay
       break if dealer.busted? || choice == :stay
     end
@@ -192,6 +189,8 @@ class Game
 
   def display_cards(dealer_turn: false)
     clear_screen
+    display_message :remaining, target, remaining_rounds if mode == :best_of
+    display_message :target, target if mode == :first_to
 
     player.display_hand
     display_message :hr
@@ -215,8 +214,8 @@ class Game
 
     display_cards(dealer_turn: true)
 
-    display_message(:busted, { busted: busted }) if busted
-    winner ? display_message(:win, { winner: winner }) : display_message(:tie)
+    display_message :busted, busted if busted
+    winner ? display_message(:win, winner) : display_message(:tie)
   end
 end
 

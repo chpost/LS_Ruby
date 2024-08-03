@@ -45,7 +45,7 @@ class Card
 
   def layout(hide: false)
     CARD_LAYOUT.map do |line|
-      format line, hide ? { rank: '?', suit: '?' } : { rank: rank, suit: suit }
+      format line, (hide ? '?' : rank), (hide ? '?' : suit)
     end
   end
 end
