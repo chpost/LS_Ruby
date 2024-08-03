@@ -1,0 +1,91 @@
+banner: |+
+          * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+          *  _____                    _                ___              *
+          * |_   _|_      _____ _ __ | |_ _   _       / _ \ _ __   ___  *
+          *   | | \ \ /\ / / _ \ '_ \| __| | | |_____| | | | '_ \ / _ \ *
+          *   | |  \ V  V /  __/ | | | |_| |_| |_____| |_| | | | |  __/ *
+          *   |_|   \_/\_/ \___|_| |_|\__|\__, |      \___/|_| |_|\___| *
+          *                               |___/                         *
+          * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+welcome: "Welcome to Twenty-One!"
+goodbye: "Thanks for playing Twenty-One. Goodbye!"
+set_name: "Please enter your name:"
+valid_name: "Sorry, you must enter a value."
+choose_mode: |+
+                Please choose a game mode:
+                Type a '?' for an explanation of the different game modes.
+                --------------------------
+                1) Single round
+                2) Best of (n)
+                3) First to (n)
+                --------------------------
+valid_mode: "Sorry, that is not a valid choice. Please enter 1, 2, or 3"
+mode_info: |+
+             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+             * Single Round                                                *
+             * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *
+             * Play one round at a time. Rematch as many times             *
+             * as you would like. The score will not be reset.             *
+             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+             * Best of (n)                                                 *
+             * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *
+             * Play (n) rounds or until either player gains                *
+             * an advantage which the other can not recover.               *
+             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+             * First to (n)                                                *
+             * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *
+             * Play as many rounds as is necessary                         *
+             * until someone wins (n) rounds.                              *
+             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+set_target: "Please enter the number of rounds:"
+valid_target: "Sorry, you must enter a number between 3 and 15."
+invalid: "Sorry, you must enter a valid option."
+game_style:
+  single: "Play one round at a time with the option to play again after each round"
+  best_of: |+
+             Play up to (n) rounds.
+             Select an odd number (n) and once a play wins n / 2 + 1 rounds, the match is over.
+  first_to: "Play as many rounds as it takes until a player wins (n) rounds."
+continue: "Press any key to continue..."
+hit_or_stay: "Would you like to (h)it or (s)tay?"
+hit: "%<participant>s hits!"
+stay: "%<participant>s stays!"
+busted: "Oops, %<busted>s busted!"
+win: "%<winner>s wins!"
+tie: "It's a tie!"
+grand_win: |+
+             __   __                     _       _ 
+             \ \ / /__  _   _  __      _(_)_ __ | |
+              \ V / _ \| | | | \ \ /\ / / | '_ \| |
+               | | (_) | |_| |  \ V  V /| | | | |_|
+               |_|\___/ \__,_|   \_/\_/ |_|_| |_(_)
+                             
+             * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+              
+             %<winner>s won %<score>d rounds.
+grand_lose: |+
+              __   __            _                _ 
+              \ \ / /__  _   _  | | ___  ___  ___| |
+               \ V / _ \| | | | | |/ _ \/ __|/ _ \ |
+                | | (_) | |_| | | | (_) \__ \  __/_|
+                |_|\___/ \__,_| |_|\___/|___/\___(_)
+                              
+              * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+              
+              %<winner>s won %<score>d rounds.
+grand_tie: |+
+              .___ _   _               _   _      _ 
+              |_ _| |_( )___    __ _  | |_(_) ___| |
+               | || __|// __|  / _` | | __| |/ _ \ |
+               | || |_  \__ \ | (_| | | |_| |  __/_|
+              |___|\__| |___/  \__,_|  \__|_|\___(_)
+              
+              * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+              
+              %<player>s and %<dealer>s each won %<score>d rounds.
+play_again: "Would you like to play again? (y/n)"
+hr: |+
+      
+      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+          
